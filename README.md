@@ -34,3 +34,18 @@ different TCP ports.
 
 You can use environment variable ```IPFS_BIN``` to specify ```go-ipfs``` binary
 path. This makes testing experimental versions easier.
+
+Example
+-------
+
+You can do a simple localhost transfer test using the following steps.
+
+1. ```send 400```
+2. Read the data reference hash from the command output.
+3. ```receive <hash>``` (on another terminal)
+4. Wait for the download to complete.
+5. A graph should automatically open, or you can see ```data/ipfs.png```.
+
+This should produce something similar to this:
+
+![localhost 400 MB graph](examples/localhost_400MB.png?raw=true)
