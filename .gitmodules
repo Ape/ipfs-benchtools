@@ -1,0 +1,4 @@
+[submodule "ipfs-benchmark"]
+	path = ipfs-benchmark
+	url = https://github.com/Ape/ipfs-benchmark.git
+	branch = integration

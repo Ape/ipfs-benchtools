@@ -1,0 +1,61 @@
+#!/bin/sh
+
+[ $# -ne 1 ] && echo -e "Usage: $0 <data ref>" && exit
+
+REF=$1
+
+set -em
+
+[ -z $IPFS_BIN ] && IPFS_BIN=ipfs
+
+# Initialize the repo
+export IPFS_PATH=$(pwd)/ipfs_receive
+mkdir -p $IPFS_PATH
+$IPFS_BIN init
+
+# Start the daemon
+set -m
+$IPFS_BIN daemon &
+IPFS_PID=$!
+
+trap "trap - SIGINT SIGTERM EXIT; \
+      kill $IPFS_PID; \
+      wait $IPFS_PID; \
+      exit" SIGINT SIGTERM EXIT
+
+# Wait for daemon to start
+sleep 0.2
+until $IPFS_BIN swarm peers >/dev/null 2>&1; do
+	echo -n .
+	sleep 0.2
+done
+
+# Move to data directory
+mkdir -p data
+cd data
+rm -f ipfs.rrd
+
+# Start data collection
+../ipfs-benchmark/ipfs-collect &
+
+trap "trap - SIGINT SIGTERM EXIT; \
+      kill $IPFS_PID; \
+      killall ipfs-collect; \
+      wait $IPFS_PID; \
+      rm -r $IPFS_PATH; \
+      exit" SIGINT SIGTERM EXIT
+
+# Download test data
+$IPFS_BIN get -o data $REF
+sleep 3
+
+# Clean up
+killall ipfs-collect
+kill $IPFS_PID
+trap - SIGINT SIGTERM EXIT
+wait $IPFS_PID
+rm -r $IPFS_PATH
+
+# Show results
+../ipfs-benchmark/ipfs-graph
+feh ipfs.png
