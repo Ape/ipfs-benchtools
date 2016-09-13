@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 [ $# -lt 1 ] && display_help=true
 
@@ -70,7 +70,7 @@ cd data
 rm -f ipfs.rrd
 
 # Start data collection
-../ipfs-benchmark/ipfs-collect &
+./ipfs-benchmark/ipfs-collect data &
 
 trap "trap - SIGINT SIGTERM EXIT; \
       kill $IPFS_PID; \
