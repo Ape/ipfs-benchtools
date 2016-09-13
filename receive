@@ -60,7 +60,7 @@ until $IPFS_BIN swarm peers >/dev/null 2>&1; do
 done
 
 # If needed to connect to specific peer
-if [ "connect_to_specific" = true ] ; then
+if [ "$connect_to_specific" = true ] ; then
     $IPFS_BIN swarm connect $REMOTE_PEER_ADDRESS
 fi
 
