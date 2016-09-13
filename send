@@ -66,6 +66,9 @@ echo "Generating test data..."
 ref=$(dd if=/dev/urandom iflag=fullblock bs=1M count=$DATA_SIZE \
       | $IPFS_BIN add -q)
 
+# Display addresses
+$IPFS_BIN id -f="<addrs>\n"
+
 # Wait for signal
 echo "Sender started with $ref"
 echo "Press ctrl-C to stop"

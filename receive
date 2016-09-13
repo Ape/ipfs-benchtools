@@ -70,7 +70,7 @@ cd data
 rm -f ipfs.rrd
 
 # Start data collection
-./ipfs-benchmark/ipfs-collect data &
+../ipfs-benchmark/ipfs-collect &
 
 trap "trap - SIGINT SIGTERM EXIT; \
       kill $IPFS_PID; \
