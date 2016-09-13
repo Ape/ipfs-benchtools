@@ -1,8 +1,31 @@
 #!/bin/sh
 
-[ $# -ne 1 ] && echo -e "Usage: $0 <data ref>" && exit
+[ $# -lt 1 ] && display_help=true
 
-REF=$1
+while [[ $# -gt 0 ]]
+do
+    key="$1"
+
+    case $key in
+        -u|--udp)
+            use_udp=true
+            ;;
+        -h|--help)
+            display_help=true
+            ;;
+        -c|--connect)
+            connect_to_specific=true
+            shift
+            REMOTE_PEER_ADDRESS=$1
+            ;;
+        *)
+            REF=$key
+        ;;
+    esac
+    shift
+done
+
+[ "$display_help" = true -o -z "$REF" ] && echo "Usage: $0 [--udp] [--connect <address>] <data ref>" && exit
 
 set -em
 
@@ -12,6 +35,12 @@ set -em
 export IPFS_PATH=$(pwd)/ipfs_receive
 mkdir -p $IPFS_PATH
 $IPFS_BIN init
+
+# Modify the swarm addresses in case udp should be used
+if [ "$use_udp" = true ] ; then
+    $IPFS_BIN config --json Addresses.Swarm \
+        '["/ip4/0.0.0.0/udp/4001/utp", "/ip6/::/udp/4001/utp"]'
+fi
 
 # Start the daemon
 set -m
@@ -29,6 +58,11 @@ until $IPFS_BIN swarm peers >/dev/null 2>&1; do
 	echo -n .
 	sleep 0.2
 done
+
+# If needed to connect to specific peer
+if [ "connect_to_specific" = true ] ; then
+    $IPFS_BIN swarm connect $REMOTE_PEER_ADDRESS
+fi
 
 # Move to data directory
 mkdir -p data

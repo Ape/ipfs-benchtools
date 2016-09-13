@@ -1,8 +1,26 @@
-#!/bin/sh
+#!/bin/bash
 
-[ $# -ne 1 ] && echo -e "Usage: $0 <size in megabytes>" && exit
+[ $# -lt 1 ] && display_help=true
 
-DATA_SIZE=$1 # megabytes
+while [[ $# -gt 0 ]]
+do
+    key="$1"
+
+    case $key in
+        -u|--udp)
+            use_udp=true
+            ;;
+        -h|--help)
+            display_help=true
+            ;;
+        *)
+            DATA_SIZE=$key
+        ;;
+    esac
+    shift
+done
+
+[ "$display_help" = true -o -z "$DATA_SIZE" ] && echo "Usage: $0 [--udp] <size in megabytes>" && exit
 
 set -em
 
@@ -20,6 +38,12 @@ $IPFS_BIN config --json Addresses \
    "API": "/ip4/127.0.0.1/tcp/5002",
    "Gateway": "/ip4/127.0.0.1/tcp/8082"
 }'
+
+# Modify the swarm addresses in case udp should be used
+if [ "$use_udp" = true ] ; then
+    $IPFS_BIN config --json Addresses.Swarm \
+        '["/ip4/0.0.0.0/udp/4002/utp", "/ip6/::/udp/4002/utp"]'
+fi
 
 # Start the daemon
 $IPFS_BIN daemon &
