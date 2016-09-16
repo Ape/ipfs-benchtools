@@ -10,6 +10,9 @@ do
         -u|--udp)
             use_udp=true
             ;;
+        -nm|--no-mdns)
+            disable_mdns=true
+            ;;
         -h|--help)
             display_help=true
             ;;
@@ -25,7 +28,7 @@ do
     shift
 done
 
-[ "$display_help" = true -o -z "$REF" ] && echo "Usage: $0 [--udp] [--connect <address>] <data ref>" && exit
+[ "$display_help" = true -o -z "$REF" ] && echo "Usage: $0 [--udp] [--no-mdns] [--connect <address>] <data ref>" && exit
 
 set -em
 
@@ -40,6 +43,11 @@ $IPFS_BIN init
 if [ "$use_udp" = true ] ; then
     $IPFS_BIN config --json Addresses.Swarm \
         '["/ip4/0.0.0.0/udp/4001/utp", "/ip6/::/udp/4001/utp"]'
+fi
+
+# Disable mdns discovery if needed
+if [ "$disable_mdns" = true ] ; then
+    $IPFS_BIN config Discovery.MDNS.Enabled false --json
 fi
 
 # Start the daemon
