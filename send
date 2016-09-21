@@ -13,6 +13,11 @@ do
         -nm|--no-mdns)
             disable_mdns=true
             ;;
+        -i|--interface)
+            use_interface=true
+            shift
+            interface=$1
+            ;;
         -h|--help)
             display_help=true
             ;;
@@ -23,7 +28,7 @@ do
     shift
 done
 
-[ "$display_help" = true -o -z "$DATA_SIZE" ] && echo "Usage: $0 [--udp] [--no-mdns] <size in megabytes>" && exit
+[ "$display_help" = true -o -z "$DATA_SIZE" ] && echo "Usage: $0 [--udp] [--interface <interface>] [--no-mdns] <size in megabytes>" && exit
 
 set -em
 
@@ -34,10 +39,18 @@ export IPFS_PATH=ipfs_send
 mkdir -p $IPFS_PATH
 $IPFS_BIN init
 
+ipv4 = "0.0.0.0"
+ipv6 = "::"
+
+if [ "$use_interface" = true ] ; then
+    ipv4 = $(ip -f inet -o addr show $interface scope global |cut -d\  -f 7 | cut -d/ -f 1)
+    ipv6 = $(ip -f inet6 -o addr show $interface scope global |cut -d\  -f 7 | cut -d/ -f 1)
+fi
+
 # Modify ports to allow two ipfs instances on the same host
 $IPFS_BIN config --json Addresses \
 '{
-   "Swarm": [ "/ip4/0.0.0.0/tcp/4002", "/ip6/::/tcp/4002" ],
+   "Swarm": [ "/ip4/$ipv4/tcp/4002", "/ip6/$ipv6/tcp/4002" ],
    "API": "/ip4/127.0.0.1/tcp/5002",
    "Gateway": "/ip4/127.0.0.1/tcp/8082"
 }'
@@ -45,7 +58,7 @@ $IPFS_BIN config --json Addresses \
 # Modify the swarm addresses in case udp should be used
 if [ "$use_udp" = true ] ; then
     $IPFS_BIN config --json Addresses.Swarm \
-        '["/ip4/0.0.0.0/udp/4002/utp", "/ip6/::/udp/4002/utp"]'
+        '["/ip4/$ipv4/udp/4002/utp", "/ip6/$ipv6/udp/4002/utp"]'
 fi
 
 # Disable mdns discovery if needed
