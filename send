@@ -1,6 +1,6 @@
 #!/bin/bash
 
-[ $# -lt 1 ] && display_help=true && ipv4="0.0.0.0" && ipv6="::"
+[ $# -lt 1 ] && display_help=true
 
 while [[ $# -gt 0 ]]
 do
@@ -39,9 +39,12 @@ export IPFS_PATH=ipfs_send
 mkdir -p $IPFS_PATH
 $IPFS_BIN init
 
+ipv4="0.0.0.0"
+ipv6="::"
+
 if [ "$use_interface" = true ] ; then
-    export ipv4 = $(ip -f inet -o addr show $interface scope global |cut -d\  -f 7 | cut -d/ -f 1)
-    export ipv6 = $(ip -f inet6 -o addr show $interface scope global |cut -d\  -f 7 | cut -d/ -f 1)
+    ipv4=$(ip -f inet -o addr show $interface scope global |cut -d\  -f 7 | cut -d/ -f 1)
+    ipv6=$(ip -f inet6 -o addr show $interface scope global |cut -d\  -f 7 | cut -d/ -f 1)
 fi
 
 # Modify ports to allow two ipfs instances on the same host
