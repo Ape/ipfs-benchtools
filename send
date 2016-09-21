@@ -50,7 +50,7 @@ fi
 # Modify ports to allow two ipfs instances on the same host
 $IPFS_BIN config --json Addresses \
 '{
-   "Swarm": [ "/ip4/$ipv4/tcp/4002", "/ip6/$ipv6/tcp/4002" ],
+   "Swarm": [ "/ip4/'$ipv4'/tcp/4002", "/ip6/'$ipv6'/tcp/4002" ],
    "API": "/ip4/127.0.0.1/tcp/5002",
    "Gateway": "/ip4/127.0.0.1/tcp/8082"
 }'
@@ -58,7 +58,7 @@ $IPFS_BIN config --json Addresses \
 # Modify the swarm addresses in case udp should be used
 if [ "$use_udp" = true ] ; then
     $IPFS_BIN config --json Addresses.Swarm \
-        '["/ip4/$ipv4/udp/4002/utp", "/ip6/$ipv6/udp/4002/utp"]'
+        '["/ip4/'$ipv4'/udp/4002/utp", "/ip6/'$ipv6'/udp/4002/utp"]'
 fi
 
 # Disable mdns discovery if needed
