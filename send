@@ -7,19 +7,19 @@ do
     key="$1"
 
     case $key in
-        -u|--udp)
-            use_udp=true
-            ;;
-        -nm|--no-mdns)
-            disable_mdns=true
+        -h|--help)
+            display_help=true
             ;;
         -i|--interface)
             use_interface=true
             shift
             interface=$1
             ;;
-        -h|--help)
-            display_help=true
+        -nm|--no-mdns)
+            disable_mdns=true
+            ;;
+        -u|--udp)
+            use_udp=true
             ;;
         *)
             DATA_SIZE=$key
