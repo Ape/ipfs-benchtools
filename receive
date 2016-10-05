@@ -52,12 +52,12 @@ if [ "$use_interface" = true ] ; then
     ipv6=$(ip -f inet6 -o addr show $interface scope global |cut -d\  -f 7 | cut -d/ -f 1)
 fi
 
-# Modify ports to allow two ipfs instances on the same host
+# Configure the IP addresses that should be used
 $IPFS_BIN config --json Addresses \
 '{
-   "Swarm": [ "/ip4/'$ipv4'/tcp/4003", "/ip6/'$ipv6'/tcp/4003" ],
-   "API": "/ip4/127.0.0.1/tcp/5003",
-   "Gateway": "/ip4/127.0.0.1/tcp/8083"
+   "Swarm": [ "/ip4/'$ipv4'/tcp/4001", "/ip6/'$ipv6'/tcp/4001" ],
+   "API": "/ip4/127.0.0.1/tcp/5001",
+   "Gateway": "/ip4/127.0.0.1/tcp/8081"
 }'
 
 # Modify the swarm addresses in case udp should be used
