@@ -18,13 +18,16 @@ Dependencies
 Commands
 --------
 
-```send <size in megabytes>``` will create a new temporary IPFS node and host
-specified amount of random data for others to get. Note the file hash reference
-on command output.
+```send [--udp] <size in megabytes>``` will create a new temporary IPFS node and host
+specified amount of random data for others to get. The optional ```--udp``` switch will
+use the UDP/µTP transport instead of TCP. Note the local addresses and the file hash
+reference on command output.
 
-```receive <data ref>``` will create a new temporary IPFS node and download the
-data specified by the hash reference. It will also collect benchmark data about
-the download and finally show a graph.
+```receive [--udp] [--connect <sender address>] <data ref>``` will create a new temporary IPFS
+node and download the data specified by the hash reference. It will also collect benchmark
+data about the download and finally show a graph. The optional ```--udp`` switch will 
+use the UDP/µTP instead of TCP. If applicable you can expliciy specify the address of the
+send node by adding ```--connect <sender address>```
 
 The suggested way to do benchmarks is to run ```send``` on one host and
 ```receive``` on another. Varying network conditions will produce corresponding

@@ -1,8 +1,39 @@
-#!/bin/sh
+#!/bin/bash
 
-[ $# -ne 1 ] && echo -e "Usage: $0 <data ref>" && exit
+[ $# -lt 1 ] && display_help=true
 
-REF=$1
+while [[ $# -gt 0 ]]
+do
+    key="$1"
+
+    case $key in
+        -c|--connect)
+            connect_to_specific=true
+            shift
+            REMOTE_PEER_ADDRESS=$1
+            ;;
+        -h|--help)
+            display_help=true
+            ;;
+        -i|--interface)
+            use_interface=true
+            shift
+            interface=$1
+            ;;
+        -nm|--no-mdns)
+            disable_mdns=true
+            ;;
+        -u|--udp)
+            use_udp=true
+            ;;
+        *)
+            REF=$key
+        ;;
+    esac
+    shift
+done
+
+[ "$display_help" = true -o -z "$REF" ] && echo "Usage: $0 [--udp] [--interface <interface>] [--no-mdns] [--connect <address>] <data ref>" && exit
 
 set -em
 
@@ -12,6 +43,33 @@ set -em
 export IPFS_PATH=$(pwd)/ipfs_receive
 mkdir -p $IPFS_PATH
 $IPFS_BIN init
+
+ipv4="0.0.0.0"
+ipv6="::"
+
+if [ "$use_interface" = true ] ; then
+    ipv4=$(ip -f inet -o addr show $interface scope global |cut -d\  -f 7 | cut -d/ -f 1)
+    ipv6=$(ip -f inet6 -o addr show $interface scope global |cut -d\  -f 7 | cut -d/ -f 1)
+fi
+
+# Configure the IP addresses that should be used
+$IPFS_BIN config --json Addresses \
+'{
+   "Swarm": [ "/ip4/'$ipv4'/tcp/4001", "/ip6/'$ipv6'/tcp/4001" ],
+   "API": "/ip4/127.0.0.1/tcp/5001",
+   "Gateway": "/ip4/127.0.0.1/tcp/8081"
+}'
+
+# Modify the swarm addresses in case udp should be used
+if [ "$use_udp" = true ] ; then
+    $IPFS_BIN config --json Addresses.Swarm \
+        '["/ip4/'$ipv4'/udp/4001/utp", "/ip6/'$ipv6'/udp/4001/utp"]'
+fi
+
+# Disable mdns discovery if needed
+if [ "$disable_mdns" = true ] ; then
+    $IPFS_BIN config Discovery.MDNS.Enabled false --json
+fi
 
 # Start the daemon
 set -m
@@ -29,6 +87,11 @@ until $IPFS_BIN swarm peers >/dev/null 2>&1; do
 	echo -n .
 	sleep 0.2
 done
+
+# If needed to connect to specific peer
+if [ "$connect_to_specific" = true ] ; then
+    $IPFS_BIN swarm connect $REMOTE_PEER_ADDRESS
+fi
 
 # Move to data directory
 mkdir -p data
